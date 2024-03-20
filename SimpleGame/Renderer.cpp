@@ -20,6 +20,9 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	//Load shaders
 	m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs", "./Shaders/SolidRect.fs");
 	
+	//Load shaders
+	m_ParticleShader = CompileShaders("./Shaders/Particle.vs", "./Shaders/Particle.fs");
+
 	//Create VBOs
 	CreateVertexBufferObjects();
 
@@ -55,6 +58,21 @@ void Renderer::CreateVertexBufferObjects()
 	glGenBuffers(1, &m_TestVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_TestVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	float size = 0.05f;
+
+	float particleVerts[] = {
+		 size,  size, 0.0,
+		-size,  size, 0.0,
+		-size, -size, 0.0,
+		 size,  size, 0.0,
+		-size, -size, 0.0,
+		 size, -size, 0.0,
+	};
+
+	glGenBuffers(1, &m_ParticleVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_ParticleVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(particleVerts), particleVerts, GL_STATIC_DRAW);
 
 }
 
@@ -163,7 +181,7 @@ GLuint Renderer::CompileShaders(char* filenameVS, char* filenameFS)
 	}
 
 	glUseProgram(ShaderProgram);
-	std::cout << filenameVS << ", " << filenameFS << " Shader compiling is done.";
+	std::cout << filenameVS << ", " << filenameFS << " Shader compiling is done." << '\n';
 
 	return ShaderProgram;
 }
@@ -209,6 +227,31 @@ void Renderer::DrawTest()
 	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	glDisableVertexAttribArray(attribPosition);
+
+}
+
+void Renderer::DrawParticle()
+{
+	//Program select
+	GLuint shader = m_ParticleShader;
+	glUseProgram(shader);
+
+
+	m_ParticleTime += 0.01;
+
+	if (m_ParticleTime * 0.01 > 2.0f) m_ParticleTime = 0.f;
+
+	int attribPosition = glGetAttribLocation(shader, "a_Position");
+	glEnableVertexAttribArray(attribPosition);
+	glBindBuffer(GL_ARRAY_BUFFER, m_ParticleVBO);
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+
+	glUniform1f(glGetUniformLocation(shader, "u_Time"), m_ParticleTime);
+
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glDisableVertexAttribArray(attribPosition);
 
