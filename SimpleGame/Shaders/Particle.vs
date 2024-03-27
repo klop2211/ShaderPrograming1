@@ -58,9 +58,9 @@ void Parabola()
 
 void main()
 {
-	//Line();
+	Line();
 	//Circle();
-	Parabola();
+	//Parabola();
 	//Basic();
 }
 
